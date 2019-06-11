@@ -6,12 +6,16 @@ invisible(if (file.exists("beeswarm.jpg")) file.remove("beeswarm.jpg"))
 invisible(if (file.exists("ecdf.jpg")) file.remove("ecdf.jpg"))
 invisible(if (file.exists("stats.txt")) file.remove("stats.txt"))
 invisible(if (file.exists("clusters.txt")) file.remove("clusters.txt"))
+invisible(install.packages("ggplot2",repos = "http://cran.us.r-project.org"))
+invisible(install.packages("beeswarm",repos = "http://cran.us.r-project.org"))
+invisible(install.packages("phangorn",repos = "http://cran.us.r-project.org"))
 library("ggplot2")
 library('beeswarm')
+library("phangorn")
 
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=4) {
-  stop("Wrong parameters. Run as: Rscript kmeansClustering.R <distance matrix> <k1> <k2> <cut>", call.=FALSE)
+if (length(args)!=5) {
+  stop("Wrong parameters. Run as: Rscript kmeansClustering.R <distance matrix> <k1> <k2> <k*> <cut>", call.=FALSE)
 }
 
 # Read input file
@@ -19,7 +23,8 @@ mx <- as.matrix(read.table(args[1],header=T,row.names=1))
 
 k1 <- as.numeric(args[2])
 k2 <- as.numeric(args[3])
-cut <- as.numeric(args[4])
+kx <- as.numeric(args[4])
+cut <- as.numeric(args[5])
 
 b <- c()
 t <- c()
@@ -36,6 +41,12 @@ bt <- b/t
 btm <- max(bt)
 i_max_bt <- which.max(bt)
 res_max <- kmeans(mx,i_max_bt)
+
+# If k* is set
+if (kx > 0) {
+  i_max_bt <- kx
+  res_max <- kmeans(mx,i_max_bt)
+}
 
 ######################## Plots ###########################
 
@@ -92,6 +103,15 @@ for (n_cluster in 1:i_max_bt) {
   csize = cluster_sizes[n_cluster]
   if (csize >= 3) {
     m1 = as.matrix(mx[res_max$cluster == n_cluster,res_max$cluster == n_cluster])
+    m1_2 = as.matrix(mx2[res_max$cluster == n_cluster,res_max$cluster == n_cluster])
+    
+    # draw cladogram
+    tree_upgma <- upgma(m1_2)
+    treename <- paste("cluster",n_cluster,".jpg",sep="")
+    jpeg(filename = treename)
+    plot(tree_upgma, main=paste("cluster",n_cluster,sep=" "))
+    dev.off()
+    
     x = m1[upper.tri(m1)]
     ll = dim(m1)[1]
     
