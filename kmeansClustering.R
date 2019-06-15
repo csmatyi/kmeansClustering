@@ -57,7 +57,7 @@ jpeg("BTplot.jpg")
 plot(bt,type="line",col="green",xlab="k",ylab="",axes=F, ylim=c(0,1))
 axis(side = 1, at = c(1:k2), cex.axis=0.65)
 axis(side = 2)
-legend("topleft",c("betw./tot.wi"),col=c("green"),lty=c(1,1,1))
+legend("topleft",c("betw./tot.ss"),col=c("green"),lty=c(1,1,1))
 invisible(dev.off())
 
 # Heatmap
